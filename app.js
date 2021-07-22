@@ -1,27 +1,43 @@
-const app = require('express')();
-const { SERVER_PORT, inTestEnv } = require('./env');
+const express = require('express');
 
-// app settings
-app.set('x-powered-by', false); // for security
+const connection = require('./db-config');
 
-// server setup
-app.listen(SERVER_PORT, () => {
-  if (!inTestEnv) {
-    console.log(`Server running on port ${SERVER_PORT}`);
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+connection.connect((err) => {
+  if (err) {
+    console.error('whomp whomp error connecting');
+  } else {
+    console.log('connected to database 🥳, happy browsing 🌎');
   }
 });
 
-// process setup : improves error reporting
-process.on('unhandledRejection', (error) => {
-  console.error('unhandledRejection', JSON.stringify(error), error.stack);
-  process.exit(1);
+connection.query('SELECT * FROM destination', (err, results) => {
+  // Do something when mysql is done executing the query
+  console.log(err, results);
 });
-process.on('uncaughtException', (error) => {
-  console.error('uncaughtException', JSON.stringify(error), error.stack);
-  process.exit(1);
-});
-process.on('beforeExit', () => {
-  app.close((error) => {
-    if (error) console.error(JSON.stringify(error), error.stack);
+
+// app.use(express.json());
+
+app.get('/visitedlocations', (req, res) => {
+  connection.query('SELECT * FROM destination', (err, result) => {
+    if (err) {
+      res.status(500).send('Error retrieving data from database');
+    } else {
+      res.status(200).json(result);
+    }
   });
 });
+
+// POST ROUTES
+// app.post('/newcountry', (req, res) => {
+//   res.send('Post route is working 🎉');
+// });
+
+app.listen(PORT, (err) => {
+  if (err) console.error(err);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
+
+module.exports = app;

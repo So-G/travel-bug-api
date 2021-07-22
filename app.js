@@ -60,7 +60,45 @@ app.post('/bucketlist', (req, res) => {
       if (err) {
         res.status(500).send('Error saving data');
       } else {
-        res.status(201).send('Your wishlist was updated');
+        res.status(201).send('Your wishlist was updated, take flight soon 🛫');
+      }
+    }
+  );
+});
+
+// DELETE ROUTES
+
+app.delete('/visitedlocations/:id', (req, res) => {
+  const tripId = req.params.id;
+  connection.query(
+    'DELETE FROM destination WHERE id = ?',
+    [tripId],
+    (err, results) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send('This location stayed right where it sould be');
+      } else {
+        res
+          .status(200)
+          .send(
+            'Did you travel back in time ? Location list was successfully updated 🌈 '
+          );
+      }
+    }
+  );
+});
+
+app.delete('/bucketlist/:id', (req, res) => {
+  const tripId = req.params.id;
+  connection.query(
+    'DELETE FROM countrywishlist WHERE id = ?',
+    [tripId],
+    (err, results) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send('Covid stopped you from traveling...');
+      } else {
+        res.status(200).send('Looks like your travel wish came true ❤️🗺');
       }
     }
   );

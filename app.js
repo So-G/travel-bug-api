@@ -1,9 +1,12 @@
 const express = require('express');
+const cors = require('cors');
+
+const { SERVER_PORT, inTestEnv } = require('./env');
 
 const connection = require('./db-config');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+app.use(cors());
 
 connection.connect((err) => {
   if (err) {
@@ -25,14 +28,36 @@ app.get('/visitedlocations', (req, res) => {
   });
 });
 
+//Hard data
+
+const newCountries = [
+  {
+    name: 'Montreal',
+    background_image:
+      'https://images.unsplash.com/photo-1594825505684-5a5a5b18b544?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2175&q=80',
+    description:
+      "Montréal est la principale ville du Québec. Grande métropole insulaire et portuaire du fleuve Saint-Laurent au pied des rapides de Lachine, c'est la deuxième ville la plus peuplée du Canada, après Toronto et la plus grande ville francophone d'Amérique.",
+    flight: 'unknown',
+  },
+  {
+    name: 'Antarctica',
+    background_image:
+      'https://images.unsplash.com/photo-1603548746365-0c7a1583d826?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=728&q=80',
+    description:
+      "Antarctica is Earth's southernmost continent. It contains the geographic South Pole and is situated in the Antarctic region of the Southern Hemisphere, almost entirely south of the Antarctic Circle, and is surrounded by the Southern Ocean.",
+    flight: 'good luck!',
+  },
+];
+
 app.get('/bucketlist', (req, res) => {
-  connection.query('SELECT * FROM countrywishlist', (err, result) => {
-    if (err) {
-      res.status(500).send('Error retrieving data from database');
-    } else {
-      res.status(200).json(result);
-    }
-  });
+  res.json(newCountries);
+  // connection.query('SELECT * FROM countrywishlist', (err, result) => {
+  //   if (err) {
+  //     res.status(500).send('Error retrieving data from database');
+  //   } else {
+  //     res.status(200).json(result);
+  //   }
+  // });
 });
 
 // POST ROUTES
@@ -104,9 +129,23 @@ app.delete('/bucketlist/:id', (req, res) => {
   );
 });
 
-app.listen(PORT, (err) => {
-  if (err) console.error(err);
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(SERVER_PORT, (err) => {
+  if (!inTestEnv) {
+    console.log(`🚀 Server running on http://localhost:${SERVER_PORT}`);
+  }
 });
 
-module.exports = app;
+// process setup : improves error reporting
+process.on('unhandledRejection', (error) => {
+  console.error('unhandledRejection', JSON.stringify(error), error.stack);
+  process.exit(1);
+});
+process.on('uncaughtException', (error) => {
+  console.error('uncaughtException', JSON.stringify(error), error.stack);
+  process.exit(1);
+});
+process.on('beforeExit', () => {
+  app.close((error) => {
+    if (error) console.error(JSON.stringify(error), error.stack);
+  });
+});

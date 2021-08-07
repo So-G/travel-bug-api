@@ -50,22 +50,21 @@ const newCountries = [
 ];
 
 app.get('/bucketlist', (req, res) => {
-  res.json(newCountries);
-  // connection.query('SELECT * FROM countrywishlist', (err, result) => {
-  //   if (err) {
-  //     res.status(500).send('Error retrieving data from database');
-  //   } else {
-  //     res.status(200).json(result);
-  //   }
-  // });
+  connection.query('SELECT * FROM countrywishlist', (err, result) => {
+    if (err) {
+      res.status(500).send('Error retrieving data from database');
+    } else {
+      res.status(200).json(result);
+    }
+  });
 });
 
 // POST ROUTES
 app.post('/visitedlocations', (req, res) => {
-  const { name, background_image, year, description } = req.body;
+  const { name, background_image, year, description, lat, lng } = req.body;
   connection.query(
-    'INSERT INTO destination(name, background_image, year, description) VALUES (?, ?, ?, ?)',
-    [name, background_image, year, description],
+    'INSERT INTO destination(name, background_image, year, description, lat, lng) VALUES (?, ?, ?, ?, ?, ?)',
+    [name, background_image, year, description, lat, lng],
     (err, result) => {
       if (err) {
         res.status(500).send('Error saving data');
@@ -77,10 +76,10 @@ app.post('/visitedlocations', (req, res) => {
 });
 
 app.post('/bucketlist', (req, res) => {
-  const { name, background_image, description, flight } = req.body;
+  const { name, background_image, description, flight, lat, lng } = req.body;
   connection.query(
-    'INSERT INTO countrywishlist(name, background_image, description, flight) VALUES (?, ?, ?, ?)',
-    [name, background_image, description, flight],
+    'INSERT INTO countrywishlist(name, background_image, description, flight, lat, lng) VALUES (?, ?, ?, ?, ?, ?)',
+    [name, background_image, description, flight, lat, lng],
     (err, result) => {
       if (err) {
         res.status(500).send('Error saving data');
